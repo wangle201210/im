@@ -1,0 +1,23 @@
+<<<template "base/base.html" .>>>
+<<<define "head">>>
+<title>欢迎进入</title>
+<<<end>>>
+<<<define "body">>>
+<div class="container" style="width: 500px;">
+    <br>
+    <form action="/join" method="post" class="form-horizontal">
+        <div class="form-group">
+            <label class="col-md-3 control-label">用户名: </label>
+            <div class="col-md-5">
+                  <input type="text" class="form-control" name="uname" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-10">
+                <button type="submit" class="btn btn-info">登陆</button>
+            </div>
+        </div>
+    </form>
+</div>
+<<<end>>>

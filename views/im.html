@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <!-- import CSS -->
+  <link rel="stylesheet" href="static/css/index.css">
+</head>
+<body>
+  <div id="app2">
+    <template>
+        <div>
+          <form class="form">
+            <el-row :gutter="20">
+              <el-col :sm="18" :md="10" :lg="8" :xl="6">
+                <el-input v-model="content" name="content" placeholder="请输入聊天内容..." onkeydown="if(event.keyCode==13)return false;" class="content"></el-input>
+              </el-col>
+              <el-col :sm="6" :md="4" :lg="4" :xl="3">
+                <el-button type="primary" @click="websocketsend(content)" >发送</el-button>
+              </el-col>
+              <el-col :span="24">
+                <el-card v-for="item in contentList" class="m-5 content-width">
+                  <div><b v-if="item.User" class="p-r-5">{{item.User}}:</b>{{item.Content}}</div>
+                </el-card>
+              </el-col>
+            </el-row>
+          </form>
+        </div>
+      </el-card>
+    </template>
+  </div>
+</body>
+  <!-- import Vue before Element -->
+  <script src="static/js/vue.js"></script>
+  <!-- import JavaScript -->
+  <script src="static/js/index.js"></script>
+  <script src="static/js/http.js"></script>
+  <script>
+    new Vue({
+      el: '#app2',
+      data: function() {
+        return { 
+          websock: null,
+          content: '',
+          user:'',
+          contentList: []
+        }
+      },
+      computed: {
+        maxHeight: function () {
+          return {
+            'height': this.fullHeight + 'px',
+            'overflow':'auto',
+            'overflow-x': 'hidden'
+          }
+        }
+      },
+      methods: {
+        initWebSocket(){ //初始化weosocket 
+          const wsuri = 'ws://' + window.location.host + '/ws/join?uname='+this.user;//ws地址
+          this.websock = new WebSocket(wsuri); 
+          this.websock.onopen = this.websocketonopen
+          this.websock.onerror = this.websocketonerror
+          this.websock.onmessage = this.websocketonmessage
+          this.websock.onclose = this.websocketclose
+        }, 
+        websocketonopen() {
+          console.log("WebSocket连接成功");
+        },
+        websocketonerror(e) { //错误
+          console.log("WebSocket连接发生错误");
+        },
+        websocketonmessage(e){ //数据接收
+          var data = JSON.parse(e.data)
+          if (data.Type == 0) {
+            data.Content = '你进入了聊天室.'
+            data.User = ''
+          } else if (data.Type == 1) {
+            data.Content = data.User+'离开了聊天室.'
+            data.User = ''
+          }
+          this.contentList.unshift(data)
+        }, 
+        websocketsend(agentData){//数据发送 
+          this.websock.send(agentData)
+          this.content = ''
+        }, 
+        websocketclose(e){ //关闭 
+          console.log("----")
+          console.log(e)
+          // console.log("connection closed (" + e.code + ")"); 
+  },
+        handleClick(tab, event) {
+          this.init()
+        },
+        GetUrlParam(paraName) {
+          var url = document.location.toString();
+          var arrObj = url.split("?");
+          if (arrObj.length > 1) {
+          　　var arrPara = arrObj[1].split("&");
+          　　var arr;
+
+          　　for (var i = 0; i < arrPara.length; i++) {
+          　　　　arr = arrPara[i].split("=");
+
+          　　　　if (arr != null && arr[0] == paraName) {
+          　　　　　　return decodeURI(decodeURI(arr[1]));
+          　　　　}
+          　　}
+          　　return "";
+          }
+          else {
+          　　return "";
+          }
+    　　},
+      },
+      mounted () {
+        this.user = this.GetUrlParam("uname")
+        this.initWebSocket()
+      },
+      created(){
+        
+      },
+      destroyed: function() {
+        this.websocketclose();
+      },
+      watch: {
+      }
+    })
+  </script>
+  <style type="text/css">
+    .box-card {
+      /*min-height: 500px;*/
+    }
+    .form {
+      margin-bottom: 10px;
+    }
+    .info {
+      background-color: #f3f3f380;
+    }
+    .info div {
+      margin: 5px;
+    }
+    .m-5 {
+      margin: 5px;
+    }
+    .content-width {
+      width: 500px;
+    }
+    .p-r-5 {
+      padding-right: 5px;
+    }
+  </style>
+</html>
