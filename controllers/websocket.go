@@ -16,7 +16,7 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
+	"im/helper"
 	"net/http"
 
 	"github.com/astaxie/beego"
@@ -26,38 +26,31 @@ import (
 
 // WebSocketController handles WebSocket requests.
 type WebSocketController struct {
-	baseController
+	AppController
 }
 
-// Get method handles GET requests for WebSocketController.
-func (this *WebSocketController) Get() {
-	// Safe check.
-	//uname := this.GetString("uname")
-	//if len(uname) == 0 {
-	//	this.Redirect("/", 302)
-	//	return
-	//}
-	this.TplName = "im.html"
-	this.Data["IsWebSocket"] = true
-	//this.Data["UserName"] = uname
-}
 // 接收发送过来的消息（长链接）
 // Join method handles WebSocket requests for WebSocketController.
 func (this *WebSocketController) Join() {
-	uname := this.GetString("uname")
-	password := this.GetString("password")
+	token := this.GetString("token")
 	room, e := this.GetInt64("room")
 	if e != nil || room == 0{
 		room = 1
 	}
-	user := models.User{0,uname,password,""}
-	u := models.Find(user)
-	fmt.Println(u)
-	if u.Name == "" {//查看数据库内是否有这个人,
+	info, b, sub := this.GetTokenInfo(token)
+	beego.Info(info,b,sub)
+	ji := info.(map[string]interface{})
+	uname := helper.Interface2string (ji["Username"])
+	password := helper.Interface2string (ji["Password"])
+	user := models.User{}
+	user.Name = uname
+	user.Password = password
+	e = user.Read("Name", "Password")
+	if e != nil {//查看数据库内是否有这个人,
 		this.Redirect("/", 302)
 		return
 	}
-	if u.Name != "admin" && !IsUserExist(subscribers[room], "admin") { //管理员不在线
+	if user.Role != "admin" && !IsAdminExist(subscribers[room]) { //管理员不在线
 		this.Redirect("/", 302)
 		return
 	}
@@ -77,13 +70,21 @@ func (this *WebSocketController) Join() {
 	// Join chat room.
 	Join(uname,room, ws)
 	defer Leave(ws)
-
+	broadcastPics(ws)
 	// 一直监听前端来的消息
 	// Message receive loop.
 	for {
 		_, p, err := ws.ReadMessage()
 		if err != nil {
 			return
+		}
+		chat := models.Chat{}
+		chat.Room = room
+		chat.User = &user
+		chat.Content = string(p)
+		err = InsertChat(&chat)
+		if err != nil {
+			beego.Info("chat insert err:",err)
 		}
 		publish <- newEvent(models.EVENT_MESSAGE, uname,room, string(p))
 	}

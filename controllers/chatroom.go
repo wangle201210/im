@@ -40,6 +40,14 @@ func Leave(ws *websocket.Conn) {
 	unsubscribe <- ws
 }
 
+func LogOutLeave(name string,room int64) {
+	for sub := subscribers[room].Front(); sub != nil; sub = sub.Next() {
+		if sub.Value.(Subscriber).Name == name {
+			Leave(sub.Value.(Subscriber).Conn)
+		}
+	}
+}
+
 type Subscriber struct {
 	Name string
 	Room int64
@@ -51,7 +59,7 @@ type subList struct {
 	Element *list.Element
 }
 var (
-// Channel for new join users.
+	// Channel for new join users.
 	subscribe = make(chan Subscriber, 100)
 	// Channel for exit users.
 	unsubscribe = make(chan *websocket.Conn, 100)
@@ -127,6 +135,15 @@ func init() {
 func IsUserExist(room *list.List, user string) bool {
 	for sub := room.Front(); sub != nil; sub = sub.Next() {
 		if sub.Value.(Subscriber).Name == user {
+			return true
+		}
+	}
+	return false
+}
+
+func IsAdminExist(room *list.List) bool {
+	for sub := room.Front(); sub != nil; sub = sub.Next() {
+		if sub.Value.(Subscriber).Name == "admin" {
 			return true
 		}
 	}

@@ -17,6 +17,7 @@ package main
 
 import (
 	"github.com/astaxie/beego"
+	"im/models"
 	_ "im/routers"
 )
 
@@ -25,11 +26,14 @@ const (
 )
 
 func main() {
+	models.Init()
 	beego.SetStaticPath("/videos", "static/videos")
 	beego.SetStaticPath("/js", "views/js")
 	beego.SetStaticPath("/img", "views/img")
 	beego.SetStaticPath("/fonts", "views/fonts")
 	beego.SetStaticPath("/css", "views/css")
-	beego.Info(beego.BConfig.AppName, APP_VER)
 	beego.Run()
+}
+func init() {
+	models.Init()
 }

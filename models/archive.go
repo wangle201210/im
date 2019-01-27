@@ -11,6 +11,8 @@ const (
 	EVENT_LEAVE
 	EVENT_MESSAGE
 	EVENT_OLD
+	EVENT_IMG
+	EVENT_NEWIMG
 )
 
 type Event struct {

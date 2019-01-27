@@ -16,38 +16,68 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/config"
+	"im/helper"
+	"net/http"
+	"strings"
 )
 
+type Response struct {
+	Code int64         `json:"code"`
+	Msg  string      `json:"msg"`
+	Data interface{} `json:"data"`
+}
+var (
+	verifyKey  string
+	resp = Response{}
+)
 
-type baseController struct {
+type status struct {
+	code int64
+	text string
+}
+var (
+	addSuccess		= status{http.StatusCreated,"添加成功"}
+	addError		= status{http.StatusNoContent,"添加失败"}
+	readSuccess		= status{http.StatusOK,"查询成功"}
+	readError		= status{http.StatusNoContent,"查询失败"}
+	deleteSuccess	= status{http.StatusOK,"删除成功"}
+	deleteError		= status{http.StatusNoContent,"查询失败"}
+	updateSuccess	= status{http.StatusResetContent,"更新成功"}
+	updateError		= status{http.StatusNoContent,"查询失败"}
+	paraError       = status{http.StatusAccepted,"传入参数不对"}
+)
+
+type AppController struct {
 	beego.Controller
 }
 
-
-type AppController struct {
-	baseController
-}
-
-func (this *AppController) Get() {
+func (this *AppController) Index() {
 	this.TplName = "index.html"
 }
 
-// Join method handles POST requests for AppController.
-func (this *AppController) Join() {
-	uname := this.GetString("uname")
-	password := this.GetString("password")
-	room, _ := this.GetInt64("room")
-
-	// Check valid.
-	if len(uname) == 0 {
-		this.Redirect("/", 302)
-		return
+func (this *AppController) GetTokenInfo(token ...string) (info interface{},b bool, sub string) {
+	tokenString := ""
+	if len(token) > 0 {
+		tokenString = token[0]
+	} else {
+		authString := this.Ctx.Input.Header("Authorization")
+		kv := strings.Split(authString, " ")
+		if len(kv) != 2 || kv[0] != "Bearer" {
+			beego.Error("AuthString invalid:", authString)
+		}
+		tokenString = kv[1]
 	}
-	this.Redirect("/ws/join?uname="+uname+"room="+string(room)+"password="+password, 302)
+	info, b ,sub = helper.ParseToken(tokenString,verifyKey)
 	return
 }
 
 func init() {
+	appConf, err := config.NewConfig("ini", "conf/app.conf")
+	if err != nil {
+		panic(err)
+	}
+	verifyKey = appConf.String("jwt::token")
 	beego.BConfig.WebConfig.TemplateLeft="<<<"
  	beego.BConfig.WebConfig.TemplateRight=">>>"
  }
