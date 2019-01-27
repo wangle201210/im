@@ -26,7 +26,6 @@ const (
 )
 
 func main() {
-	models.Init()
 	beego.SetStaticPath("/videos", "static/videos")
 	beego.SetStaticPath("/js", "views/js")
 	beego.SetStaticPath("/img", "views/img")

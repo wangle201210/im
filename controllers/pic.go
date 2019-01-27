@@ -40,6 +40,7 @@ func (this *PicController) Add() {
 		err := pic.Insert()
 		if err == nil {
 			resp = Response{addSuccess.code,addSuccess.text,pic}
+			BroadcastPic2All()
 		} else {
 			resp = Response{addError.code,addError.text,""}
 		}
@@ -64,6 +65,7 @@ func (this *PicController) Delete() {
 			resp = Response{deleteError.code,deleteError.text,""}
 		} else {
 			resp = Response{deleteSuccess.code,deleteSuccess.text,""}
+			BroadcastPic2All()
 		}
 
 	}
@@ -80,6 +82,7 @@ func (this *PicController) Edit() {
 		err := pic.Update()
 		if err == nil {
 			resp = Response{updateSuccess.code,updateSuccess.text,pic}
+			BroadcastPic2All()
 		} else {
 			resp = Response{updateError.code,updateError.text,""}
 		}

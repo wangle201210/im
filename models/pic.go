@@ -2,7 +2,6 @@ package models
 
 import (
 	"github.com/astaxie/beego/orm"
-	"im/controllers"
 	"time"
 )
 
@@ -21,7 +20,6 @@ func (reg *Pic) Insert() error {
 	if _, err := orm.NewOrm().Insert(reg); err != nil {
 		return err
 	}
-	controllers.BroadcastPic2All()
 	return nil
 }
 
@@ -36,7 +34,6 @@ func (reg *Pic) Update(fields ...string) error {
 	if _, err := orm.NewOrm().Update(reg, fields...); err != nil {
 		return err
 	}
-	controllers.BroadcastPic2All()
 	return nil
 }
 
@@ -44,7 +41,6 @@ func (reg *Pic) Delete() error {
 	if _, err := orm.NewOrm().Delete(reg); err != nil {
 		return err
 	}
-	controllers.BroadcastPic2All()
 	return nil
 }
 
