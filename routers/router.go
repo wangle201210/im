@@ -7,7 +7,7 @@ import (
 
 func init() {
 	// Register routers.
-	beego.Router("/", &controllers.AppController{})
+	beego.Router("/", &controllers.AppController{},"get:Index")
 	// Indicate AppController.Join method to handle POST requests.
 	beego.Router("/login", &controllers.UserController{}, "post:Login")
 	beego.Router("/logout", &controllers.UserController{}, "post:Logout")
