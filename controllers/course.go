@@ -2,8 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/orm"
 	"im/models"
 	"strconv"
 )
@@ -16,14 +14,17 @@ var modCourse models.Course
 var modCourseList []models.Course
 
 func (this *CourseController) All() {
-	o := orm.NewOrm()
-	qs := o.QueryTable("course")
-	all, e := qs.OrderBy("-id").All(&modCourseList)
-	if e != nil {
-		beego.Info(e)
+	room := this.GetString("room")
+	roomInt, err := strconv.ParseInt(room, 10, 64)
+	if err != nil {
+		resp = Response{readError.code, readError.text, ""}
+	}
+	modCourse.Room = roomInt
+	read := modCourse.Read("Room")
+	if read != nil {
+		resp = Response{readError.code, readError.text, ""}
 	} else {
-		beego.Info(all)
-		resp = Response{readSuccess.code,readSuccess.text,modCourseList}
+		resp = Response{readSuccess.code, readSuccess.text, modCourse}
 	}
 	this.Data["json"] = resp
 	this.ServeJSON()

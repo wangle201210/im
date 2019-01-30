@@ -98,7 +98,7 @@ func broadcastWebSocket(event models.Event,room int64) {
 		beego.Error("Fail to marshal event:", err)
 		return
 	}
-	beego.Info("room is:",room)
+	//beego.Info("room is:",room)
 	for sub := subscribers[room].Front(); sub != nil; sub = sub.Next() {
 		// Immediately send event to WebSocket users.
 		ws := sub.Value.(Subscriber).Conn

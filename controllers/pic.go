@@ -59,8 +59,8 @@ func (this *PicController) Delete() {
 	if err != nil {
 		resp = Response{paraError.code,paraError.text,""}
 	} else {
-		modPic.Id = intId
-		e := modPic.Delete()
+		modPic.CId = intId
+		e := modPic.Delete("c_id")
 		if e != nil {
 			resp = Response{deleteError.code,deleteError.text,""}
 		} else {
@@ -78,7 +78,21 @@ func (this *PicController) Delete() {
 func (this *PicController) Edit() {
 	var pic models.Pic
 	var err error
-	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &pic); err == nil {
+	id := this.Ctx.Input.Param(":id")
+	intId, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		resp = Response{updateError.code, updateError.text, ""}
+	}
+	pic.CId = intId
+	read := pic.Read("CId")
+	if read != nil {
+		resp = Response{updateError.code, updateError.text, ""}
+	}
+	var getPic models.Pic
+	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &getPic); err == nil {
+		pic.Url = getPic.Url
+		pic.Room = getPic.Room
+		pic.Order = getPic.Order
 		err := pic.Update()
 		if err == nil {
 			resp = Response{updateSuccess.code,updateSuccess.text,pic}
@@ -100,8 +114,9 @@ func (this *PicController) Show() {
 	if err != nil {
 		resp = Response{readError.code, readError.text, ""}
 	}
-	modPic.Id = intId
-	read := modPic.Read()
+	modPic.CId = intId
+	read := modPic.Read("c_id")
+	beego.Info(modPic)
 	if read != nil {
 		resp = Response{readError.code, readError.text, ""}
 	} else {
@@ -137,6 +152,7 @@ func broadcastPics(ws *websocket.Conn)  {
 }
 // 所有照片推给所有人
 func BroadcastPic2All()  {
+	return
 	o := orm.NewOrm()
 	qs := o.QueryTable("pic")
 	all, e := qs.OrderBy("order").All(&modPicList)
@@ -147,7 +163,7 @@ func BroadcastPic2All()  {
 		// 把所有照片推给用户
 		for k,v := range modPicList {
 			var etype models.EventType
-			beego.Info("img key is :",k)
+			//beego.Info("img key is :",k)
 			if k == 0  {
 				etype = models.EVENT_NEWIMG
 			} else {
