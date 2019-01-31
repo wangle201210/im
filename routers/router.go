@@ -7,35 +7,6 @@ import (
 	"im/helper"
 	"strings"
 )
-var Auth = func(ctx *context.Context){
-	authString := ctx.Input.Header("Authorization")
-	kv := strings.Split(authString, " ")
-	if len(kv) != 2 || kv[0] != "Bearer" {
-		ctx.Output.Body([]byte("token is allowed"))
-	}
-	tokenString := kv[1]
-	if _, b, _ := controllers.TokenInfo(tokenString); !b {
-		ctx.Output.Body([]byte("token is allowed"))
-	}
-}
-
-var IsAdmin = func(ctx *context.Context){
-	authString := ctx.Input.Header("Authorization")
-	kv := strings.Split(authString, " ")
-	if len(kv) != 2 || kv[0] != "Bearer" {
-		ctx.Output.Body([]byte("token is allowed"))
-	}
-	tokenString := kv[1]
-	info, b, _ := controllers.TokenInfo(tokenString)
-	if !b {
-		ctx.Output.Body([]byte("token is allowed"))
-	}
-	ji := info.(map[string]interface{})
-	role := helper.Interface2string (ji["Role"])
-	if role != "admin" {
-		ctx.Output.Body([]byte("need admin"))
-	}
-}
 
 func init() {
 	// Register routers.
@@ -56,6 +27,7 @@ func init() {
 		beego.NSRouter("/histories",&controllers.HistoryController{},"get:All"),
 		beego.NSRouter("/chats",&controllers.ChatController{},"get:All"),
 		beego.NSRouter("/courses",&controllers.CourseController{},"get:All"),
+		beego.NSRouter("/videos",&controllers.VideoController{},"get:All"),
 
 		//beego.NSRouter("/ws", &controllers.WebSocketController{}),
 		beego.NSRouter("/ws/join", &controllers.WebSocketController{}, "get:Join"),
@@ -86,11 +58,44 @@ func init() {
 			beego.NSRouter("/course/:id",&controllers.CourseController{},"delete:Delete"),
 			beego.NSRouter("/course/:id",&controllers.CourseController{},"put:Edit"),
 			beego.NSRouter("/course/:id",&controllers.CourseController{},"get:Show"),
+			//video
+			beego.NSRouter("/videos",&controllers.VideoController{},"post:Add"),
+			beego.NSRouter("/video/:id",&controllers.VideoController{},"delete:Delete"),
+			beego.NSRouter("/video/:id",&controllers.VideoController{},"put:Edit"),
+			beego.NSRouter("/video/:id",&controllers.VideoController{},"get:Show"),
 		),
 	)
 	beego.AddNamespace(ns)
 	// WebSocket.
 
+}
 
+var Auth = func(ctx *context.Context){
+	authString := ctx.Input.Header("Authorization")
+	kv := strings.Split(authString, " ")
+	if len(kv) != 2 || kv[0] != "Bearer" {
+		ctx.Output.Body([]byte("token is allowed"))
+	}
+	tokenString := kv[1]
+	if _, b, _ := controllers.TokenInfo(tokenString); !b {
+		ctx.Output.Body([]byte("token is allowed"))
+	}
+}
 
+var IsAdmin = func(ctx *context.Context){
+	authString := ctx.Input.Header("Authorization")
+	kv := strings.Split(authString, " ")
+	if len(kv) != 2 || kv[0] != "Bearer" {
+		ctx.Output.Body([]byte("token is allowed"))
+	}
+	tokenString := kv[1]
+	info, b, _ := controllers.TokenInfo(tokenString)
+	if !b {
+		ctx.Output.Body([]byte("token is allowed"))
+	}
+	ji := info.(map[string]interface{})
+	role := helper.Interface2string (ji["Role"])
+	if role != "admin" {
+		ctx.Output.Body([]byte("need admin"))
+	}
 }

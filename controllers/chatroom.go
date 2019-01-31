@@ -116,9 +116,9 @@ func chatroom() {
 			broadcastWebSocket(event,event.Room)
 			models.NewArchive(event)
 
-			if event.Type == models.EVENT_MESSAGE {
-				beego.Info("Message from", event.User, ";Content:", event.Content,";room:",event.Room)
-			}
+			//if event.Type == models.EVENT_MESSAGE {
+			//	beego.Info("Message from", event.User, ";Content:", event.Content,";room:",event.Room)
+			//}
 		case unsub := <-unsubscribe:
 			for k,room := range subscribers {
 				for sub := room.Front(); sub != nil; sub = sub.Next() {

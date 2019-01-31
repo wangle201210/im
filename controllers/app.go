@@ -44,7 +44,7 @@ var (
 	deleteSuccess	= status{http.StatusOK,"删除成功"}
 	deleteError		= status{http.StatusNoContent,"查询失败"}
 	updateSuccess	= status{http.StatusResetContent,"更新成功"}
-	updateError		= status{http.StatusNoContent,"查询失败"}
+	updateError		= status{http.StatusNoContent,"更新失败"}
 	paraError       = status{http.StatusAccepted,"传入参数不对"}
 )
 
