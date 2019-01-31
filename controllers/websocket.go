@@ -54,6 +54,10 @@ func (this *WebSocketController) Join() {
 		this.Redirect("/", 302)
 		return
 	}
+	//if user.Role == "admin"  && IsAdminExist(subscribers[room]) {
+	//	this.Redirect("/", 302)
+	//	return
+	//}
 	//if IsUserExist(subscribers, uname) {
 	//	publish <- newEvent(models.EVENT_OLD, uname, "")
 	//}

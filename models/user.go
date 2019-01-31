@@ -47,6 +47,17 @@ func Find(m User) (r User) {
 	return
 }
 
+func (m User) IsAdmin(s string) bool {
+	read := m.Read(s)
+	if read != nil {
+		beego.Debug(read)
+		return false
+	}
+	if m.Role == "admin" {
+		return true
+	}
+	return false
+}
 func CheckUserAuth(name string, password string) (User, bool) {
 	o := orm.NewOrm()
 	user := User{

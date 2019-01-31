@@ -42,6 +42,11 @@ func (this *UserController) Login() {
 		} else {
 			data = Response{200,"登陆成功！", LoginToken{user, token}}
 		}
+		for _,room := range subscribers{
+			if IsUserExist(room, user.Name) {
+				data = Response{302,"你的账号已经在别处登陆！",""}
+			}
+		}
 	}
 	this.Data["json"] = data
 	this.ServeJSON()
