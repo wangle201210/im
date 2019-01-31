@@ -68,7 +68,7 @@ func (this *AppController) GetTokenInfo(token ...string) (info interface{},b boo
 		}
 		tokenString = kv[1]
 	}
-	info, b ,sub = helper.ParseToken(tokenString,verifyKey)
+	info, b ,sub = TokenInfo(tokenString)
 	return
 }
 
@@ -81,3 +81,8 @@ func init() {
 	beego.BConfig.WebConfig.TemplateLeft="<<<"
  	beego.BConfig.WebConfig.TemplateRight=">>>"
  }
+
+func TokenInfo(token string) (info interface{},b bool, sub string) {
+	info, b ,sub = helper.ParseToken(token,verifyKey)
+	return
+}

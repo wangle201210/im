@@ -52,9 +52,10 @@ func (this *UserController) Logout() {
 	info, b, _ := this.GetTokenInfo()
 	if b {
 		ji := info.(map[string]interface{})
-		name := helper.Interface2string(ji["Nmae"])
-		room := helper.Interface2int64(ji["Room"])
-		LogOutLeave(name,room)//关闭ws
+		name := helper.Interface2string(ji["Username"])
+		uid := helper.Interface2int64(ji["Uid"])
+		beego.Info("info is: ",name,uid,ji)
+		LogOutLeave(name,uid)//关闭ws
 	}
 	data := Response{200,"登出成功！",""}
 	this.Data["json"] = data

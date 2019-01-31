@@ -37,13 +37,23 @@ func Join(user string,room int64, ws *websocket.Conn) {
 }
 
 func Leave(ws *websocket.Conn) {
+	//beego.Info("ws is: ",ws)
 	unsubscribe <- ws
 }
 
-func LogOutLeave(name string,room int64) {
-	for sub := subscribers[room].Front(); sub != nil; sub = sub.Next() {
-		if sub.Value.(Subscriber).Name == name {
-			Leave(sub.Value.(Subscriber).Conn)
+func LogOutLeave(name string,uid int64) {
+	beego.Info("name room ",name,uid)
+	for k,room := range subscribers {
+		for sub := room.Front(); sub != nil; sub = sub.Next() {
+			if sub.Value.(Subscriber).Name == name {
+				subscribers[k].Remove(sub)
+				// Clone connection.
+				name := sub.Value.(Subscriber).Name
+				sub.Value.(Subscriber).Conn.Close()
+				beego.Error("WebSocket closed:", name)
+				publish <- newEvent(models.EVENT_LEAVE, sub.Value.(Subscriber).Name,k, "") // Publish a LEAVE event.
+				break
+			}
 		}
 	}
 }
