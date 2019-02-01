@@ -152,7 +152,7 @@ func broadcastPics(ws *websocket.Conn)  {
 }
 // 所有照片推给所有人
 func BroadcastPic2All()  {
-	return
+	//return
 	o := orm.NewOrm()
 	qs := o.QueryTable("pic")
 	all, e := qs.OrderBy("order").All(&modPicList)

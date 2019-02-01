@@ -13,6 +13,7 @@ const (
 	EVENT_OLD
 	EVENT_IMG
 	EVENT_NEWIMG
+	EVENT_VIDEO
 )
 
 type Event struct {

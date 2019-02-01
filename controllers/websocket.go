@@ -54,6 +54,10 @@ func (this *WebSocketController) Join() {
 		this.Redirect("/", 302)
 		return
 	}
+	//if user.Role == "admin"  && IsAdminExist(subscribers[room]) {
+	//	this.Redirect("/", 302)
+	//	return
+	//}
 	//if IsUserExist(subscribers, uname) {
 	//	publish <- newEvent(models.EVENT_OLD, uname, "")
 	//}
@@ -71,6 +75,7 @@ func (this *WebSocketController) Join() {
 	Join(uname,room, ws)
 	defer Leave(ws)
 	broadcastPics(ws)
+	broadcastVideo(ws,room)
 	// 一直监听前端来的消息
 	// Message receive loop.
 	for {
