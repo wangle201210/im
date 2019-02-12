@@ -12,18 +12,23 @@ type HistoryController struct {
 	AppController
 }
 
-var modHis models.History
-var modHisList []models.History
+var modHistory models.History
+var modHistoryList []models.History
 
 func (this *HistoryController) All() {
 	o := orm.NewOrm()
-	qs := o.QueryTable("history")
-	all, e := qs.OrderBy("-id").All(&modHisList)
+	qs := o.QueryTable("History")
+	by := qs.OrderBy("-id")
+	s := this.GetString("room")
+	if s != "" {
+		by = by.Filter("room", s)
+	}
+	all, e := by.All(&modHistoryList)
 	if e != nil {
 		beego.Info(e)
 	} else {
 		beego.Info(all)
-		resp = Response{readSuccess.code,readSuccess.text,modHisList}
+		resp = Response{readSuccess.code,readSuccess.text,modHistoryList}
 	}
 	this.Data["json"] = resp
 	this.ServeJSON()
@@ -32,12 +37,12 @@ func (this *HistoryController) All() {
 
 
 func (this *HistoryController) Add() {
-	var history models.History
+	var History models.History
 	var err error
-	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &history); err == nil {
-		err := history.Insert()
+	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &History); err == nil {
+		err := History.Insert()
 		if err == nil {
-			resp = Response{addSuccess.code,addSuccess.text,history}
+			resp = Response{addSuccess.code,addSuccess.text,History}
 		} else {
 			resp = Response{addError.code,addError.text,""}
 		}
@@ -56,8 +61,8 @@ func (this *HistoryController) Delete() {
 	if err != nil {
 		resp = Response{paraError.code,paraError.text,""}
 	} else {
-		modHis.Id = intId
-		e := modHis.Delete()
+		modHistory.CId = intId
+		e := modHistory.Delete("c_id")
 		if e != nil {
 			resp = Response{deleteError.code,deleteError.text,""}
 		} else {
@@ -72,17 +77,33 @@ func (this *HistoryController) Delete() {
 
 
 func (this *HistoryController) Edit() {
-	var history models.History
+	var History models.History
 	var err error
-	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &history); err == nil {
-		err := history.Update()
+	id := this.Ctx.Input.Param(":id")
+	intId, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		resp = Response{updateError.code, updateError.text, ""}
+	}
+	History.CId = intId
+	read := History.Read("CId")
+	if read != nil {
+		resp = Response{updateError.code, updateError.text, ""}
+	} else {
+		var getHistory models.History
+		err = json.Unmarshal(this.Ctx.Input.RequestBody, &getHistory)
 		if err == nil {
-			resp = Response{updateSuccess.code,updateSuccess.text,history}
+			History.Title = getHistory.Title
+			History.Room = getHistory.Room
+			History.Content = getHistory.Content
+			err := History.Update()
+			if err == nil {
+				resp = Response{updateSuccess.code,updateSuccess.text,History}
+			} else {
+				resp = Response{updateError.code,updateError.text,""}
+			}
 		} else {
 			resp = Response{updateError.code,updateError.text,""}
 		}
-	} else {
-		resp = Response{updateError.code,updateError.text,""}
 	}
 	this.Data["json"] = resp
 	this.ServeJSON()
@@ -95,12 +116,13 @@ func (this *HistoryController) Show() {
 	if err != nil {
 		resp = Response{readError.code, readError.text, ""}
 	}
-	modHis.Id = intId
-	read := modHis.Read()
+	modHistory.CId = intId
+	read := modHistory.Read("c_id")
+	beego.Info(modHistory)
 	if read != nil {
 		resp = Response{readError.code, readError.text, ""}
 	} else {
-		resp = Response{readSuccess.code, readSuccess.text, modHis}
+		resp = Response{readSuccess.code, readSuccess.text, modHistory}
 	}
 	this.Data["json"] = resp
 	this.ServeJSON()

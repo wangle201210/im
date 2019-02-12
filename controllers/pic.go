@@ -20,7 +20,12 @@ var modPicList []models.Pic
 func (this *PicController) All() {
 	o := orm.NewOrm()
 	qs := o.QueryTable("pic")
-	all, e := qs.OrderBy("-order").All(&modPicList)
+	by := qs.OrderBy("-order")
+	s := this.GetString("room")
+	if s != "" {
+		by = by.Filter("room", s)
+	}
+	all, e := by.All(&modPicList)
 	if e != nil {
 		beego.Info(e)
 	} else {
@@ -87,21 +92,22 @@ func (this *PicController) Edit() {
 	read := pic.Read("CId")
 	if read != nil {
 		resp = Response{updateError.code, updateError.text, ""}
-	}
-	var getPic models.Pic
-	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &getPic); err == nil {
-		pic.Url = getPic.Url
-		pic.Room = getPic.Room
-		pic.Order = getPic.Order
-		err := pic.Update()
-		if err == nil {
-			resp = Response{updateSuccess.code,updateSuccess.text,pic}
-			BroadcastPic2All()
+	} else {
+		var getPic models.Pic
+		if err = json.Unmarshal(this.Ctx.Input.RequestBody, &getPic); err == nil {
+			pic.Url = getPic.Url
+			pic.Room = getPic.Room
+			pic.Order = getPic.Order
+			err := pic.Update()
+			if err == nil {
+				resp = Response{updateSuccess.code,updateSuccess.text,pic}
+				BroadcastPic2All()
+			} else {
+				resp = Response{updateError.code,updateError.text,""}
+			}
 		} else {
 			resp = Response{updateError.code,updateError.text,""}
 		}
-	} else {
-		resp = Response{updateError.code,updateError.text,""}
 	}
 	this.Data["json"] = resp
 	this.ServeJSON()

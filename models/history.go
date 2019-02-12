@@ -37,13 +37,17 @@ func (reg *History) Update(fields ...string) error {
 	return nil
 }
 
-func (reg *History) Delete() error {
+//添加可按fields 条件删除
+func (reg *History) Delete(fields ...string) error {
+	read := reg.Read(fields...)
+	if read != nil {
+		return  read
+	}
 	if _, err := orm.NewOrm().Delete(reg); err != nil {
 		return err
 	}
 	return nil
 }
-
 
 func init() {
 	orm.RegisterModel(new(History))

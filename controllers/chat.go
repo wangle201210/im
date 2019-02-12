@@ -18,7 +18,12 @@ var modChatList []models.Chat
 func (this *ChatController) All() {
 	o := orm.NewOrm()
 	qs := o.QueryTable("chat")
-	all, e := qs.OrderBy("-id").All(&modChatList)
+	by := qs.OrderBy("-id")
+	s := this.GetString("room")
+	if s != "" {
+		by = by.Filter("room", s)
+	}
+	all, e := by.All(&modChatList)
 	if e != nil {
 		beego.Info(e)
 	} else {

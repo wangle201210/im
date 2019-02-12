@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"encoding/json"
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/orm"
 	"im/models"
 	"strconv"
 )
@@ -14,17 +16,19 @@ var modCourse models.Course
 var modCourseList []models.Course
 
 func (this *CourseController) All() {
-	room := this.GetString("room")
-	roomInt, err := strconv.ParseInt(room, 10, 64)
-	if err != nil {
-		resp = Response{readError.code, readError.text, ""}
+	o := orm.NewOrm()
+	qs := o.QueryTable("Course")
+	by := qs.OrderBy("-id")
+	s := this.GetString("room")
+	if s != "" {
+		by = by.Filter("room", s)
 	}
-	modCourse.Room = roomInt
-	read := modCourse.Read("Room")
-	if read != nil {
-		resp = Response{readError.code, readError.text, ""}
+	all, e := by.All(&modCourseList)
+	if e != nil {
+		beego.Info(e)
 	} else {
-		resp = Response{readSuccess.code, readSuccess.text, modCourse}
+		beego.Info(all)
+		resp = Response{readSuccess.code,readSuccess.text,modCourseList}
 	}
 	this.Data["json"] = resp
 	this.ServeJSON()
@@ -33,12 +37,12 @@ func (this *CourseController) All() {
 
 
 func (this *CourseController) Add() {
-	var course models.Course
+	var Course models.Course
 	var err error
-	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &course); err == nil {
-		err := course.Insert()
+	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &Course); err == nil {
+		err := Course.Insert()
 		if err == nil {
-			resp = Response{addSuccess.code,addSuccess.text,course}
+			resp = Response{addSuccess.code,addSuccess.text,Course}
 		} else {
 			resp = Response{addError.code,addError.text,""}
 		}
@@ -57,8 +61,8 @@ func (this *CourseController) Delete() {
 	if err != nil {
 		resp = Response{paraError.code,paraError.text,""}
 	} else {
-		modCourse.Id = intId
-		e := modCourse.Delete()
+		modCourse.CId = intId
+		e := modCourse.Delete("c_id")
 		if e != nil {
 			resp = Response{deleteError.code,deleteError.text,""}
 		} else {
@@ -73,17 +77,32 @@ func (this *CourseController) Delete() {
 
 
 func (this *CourseController) Edit() {
-	var course models.Course
+	var Course models.Course
 	var err error
-	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &course); err == nil {
-		err := course.Update()
+	id := this.Ctx.Input.Param(":id")
+	intId, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		resp = Response{updateError.code, updateError.text, ""}
+	}
+	Course.CId = intId
+	read := Course.Read("CId")
+	if read != nil {
+		resp = Response{updateError.code, updateError.text, ""}
+	} else {
+		var getCourse models.Course
+		err = json.Unmarshal(this.Ctx.Input.RequestBody, &getCourse)
 		if err == nil {
-			resp = Response{updateSuccess.code,updateSuccess.text,course}
+			Course.Room = getCourse.Room
+			Course.Content = getCourse.Content
+			err := Course.Update()
+			if err == nil {
+				resp = Response{updateSuccess.code,updateSuccess.text,Course}
+			} else {
+				resp = Response{updateError.code,updateError.text,""}
+			}
 		} else {
 			resp = Response{updateError.code,updateError.text,""}
 		}
-	} else {
-		resp = Response{updateError.code,updateError.text,""}
 	}
 	this.Data["json"] = resp
 	this.ServeJSON()
@@ -96,8 +115,9 @@ func (this *CourseController) Show() {
 	if err != nil {
 		resp = Response{readError.code, readError.text, ""}
 	}
-	modCourse.Id = intId
-	read := modCourse.Read()
+	modCourse.CId = intId
+	read := modCourse.Read("c_id")
+	beego.Info(modCourse)
 	if read != nil {
 		resp = Response{readError.code, readError.text, ""}
 	} else {

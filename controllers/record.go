@@ -17,8 +17,13 @@ var modRecordList []models.Record
 
 func (this *RecordController) All() {
 	o := orm.NewOrm()
-	qs := o.QueryTable("record")
-	all, e := qs.OrderBy("-id").All(&modRecordList)
+	qs := o.QueryTable("Record")
+	by := qs.OrderBy("-id")
+	s := this.GetString("room")
+	if s != "" {
+		by = by.Filter("room", s)
+	}
+	all, e := by.All(&modRecordList)
 	if e != nil {
 		beego.Info(e)
 	} else {
@@ -32,12 +37,12 @@ func (this *RecordController) All() {
 
 
 func (this *RecordController) Add() {
-	var record models.Record
+	var Record models.Record
 	var err error
-	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &record); err == nil {
-		err := record.Insert()
+	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &Record); err == nil {
+		err := Record.Insert()
 		if err == nil {
-			resp = Response{addSuccess.code,addSuccess.text,record}
+			resp = Response{addSuccess.code,addSuccess.text,Record}
 		} else {
 			resp = Response{addError.code,addError.text,""}
 		}
@@ -56,8 +61,8 @@ func (this *RecordController) Delete() {
 	if err != nil {
 		resp = Response{paraError.code,paraError.text,""}
 	} else {
-		modRecord.Id = intId
-		e := modRecord.Delete()
+		modRecord.CId = intId
+		e := modRecord.Delete("c_id")
 		if e != nil {
 			resp = Response{deleteError.code,deleteError.text,""}
 		} else {
@@ -72,17 +77,33 @@ func (this *RecordController) Delete() {
 
 
 func (this *RecordController) Edit() {
-	var record models.Record
+	var Record models.Record
 	var err error
-	if err = json.Unmarshal(this.Ctx.Input.RequestBody, &record); err == nil {
-		err := record.Update()
+	id := this.Ctx.Input.Param(":id")
+	intId, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		resp = Response{updateError.code, updateError.text, ""}
+	}
+	Record.CId = intId
+	read := Record.Read("CId")
+	if read != nil {
+		resp = Response{updateError.code, updateError.text, ""}
+	} else {
+		var getRecord models.Record
+		err = json.Unmarshal(this.Ctx.Input.RequestBody, &getRecord)
 		if err == nil {
-			resp = Response{updateSuccess.code,updateSuccess.text,record}
+			Record.Title = getRecord.Title
+			Record.Room = getRecord.Room
+			Record.Content = getRecord.Content
+			err := Record.Update()
+			if err == nil {
+				resp = Response{updateSuccess.code,updateSuccess.text,Record}
+			} else {
+				resp = Response{updateError.code,updateError.text,""}
+			}
 		} else {
 			resp = Response{updateError.code,updateError.text,""}
 		}
-	} else {
-		resp = Response{updateError.code,updateError.text,""}
 	}
 	this.Data["json"] = resp
 	this.ServeJSON()
@@ -95,8 +116,9 @@ func (this *RecordController) Show() {
 	if err != nil {
 		resp = Response{readError.code, readError.text, ""}
 	}
-	modRecord.Id = intId
-	read := modRecord.Read()
+	modRecord.CId = intId
+	read := modRecord.Read("c_id")
+	beego.Info(modRecord)
 	if read != nil {
 		resp = Response{readError.code, readError.text, ""}
 	} else {

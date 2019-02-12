@@ -26,6 +26,7 @@ const (
 )
 
 func main() {
+	beego.SetStaticPath("/im/pic", "static/pic")
 	beego.SetStaticPath("/videos", "static/videos")
 	beego.SetStaticPath("/js", "views/js")
 	beego.SetStaticPath("/img", "views/img")

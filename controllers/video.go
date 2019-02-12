@@ -20,7 +20,12 @@ var modVideoList []models.Video
 func (this *VideoController) All() {
 	o := orm.NewOrm()
 	qs := o.QueryTable("Video")
-	all, e := qs.OrderBy("-order").All(&modVideoList)
+	by := qs.OrderBy("-id")
+	s := this.GetString("room")
+	if s != "" {
+		by = by.Filter("room", s)
+	}
+	all, e := by.All(&modVideoList)
 	if e != nil {
 		beego.Info(e)
 	} else {
@@ -87,22 +92,23 @@ func (this *VideoController) Edit() {
 	read := Video.Read("CId")
 	if read != nil {
 		resp = Response{updateError.code, updateError.text, ""}
-	}
-	var getVideo models.Video
-	err = json.Unmarshal(this.Ctx.Input.RequestBody, &getVideo)
-	if err == nil {
-		Video.Url = getVideo.Url
-		Video.Room = getVideo.Room
-		Video.Content = getVideo.Content
-		err := Video.Update()
+	} else {
+		var getVideo models.Video
+		err = json.Unmarshal(this.Ctx.Input.RequestBody, &getVideo)
 		if err == nil {
-			resp = Response{updateSuccess.code,updateSuccess.text,Video}
-			BroadcastVideo2All(Video.Room,Video.Url)
+			Video.Url = getVideo.Url
+			Video.Room = getVideo.Room
+			Video.Content = getVideo.Content
+			err := Video.Update()
+			if err == nil {
+				resp = Response{updateSuccess.code,updateSuccess.text,Video}
+				BroadcastVideo2All(Video.Room,Video.Url)
+			} else {
+				resp = Response{updateError.code,updateError.text,""}
+			}
 		} else {
 			resp = Response{updateError.code,updateError.text,""}
 		}
-	} else {
-		resp = Response{updateError.code,updateError.text,""}
 	}
 	this.Data["json"] = resp
 	this.ServeJSON()
@@ -130,20 +136,21 @@ func (this *VideoController) Show() {
 
 // 对应房间视频推给某个人
 func broadcastVideo(ws *websocket.Conn, room int64) {
-	modVideo.Room = room
-	read := modVideo.Read("Room")
-	if read != nil {
-		beego.Error("video not find")
-	}
-	beego.Info("video is: ",modVideo)
-	event := models.Event{models.EVENT_VIDEO, "system", 0, int(time.Now().UnixNano() / 1e6), modVideo.Url}
-	data, err := json.Marshal(event)
-	if err != nil {
-		beego.Error("Fail to marshal event:", err)
-		return
-	}
-	if ws.WriteMessage(websocket.TextMessage, data) != nil {
-		unsubscribe <- ws
+	o := orm.NewOrm()
+	qs := o.QueryTable("Video")
+	one := qs.OrderBy("-id").Filter("room", room).One(&modVideo)
+	if one != nil {
+		beego.Info(one)
+	} else {
+		event := models.Event{models.EVENT_VIDEO, "system", 0, int(time.Now().UnixNano() / 1e6), modVideo.Url}
+		data, err := json.Marshal(event)
+		if err != nil {
+			beego.Error("Fail to marshal event:", err)
+			return
+		}
+		if ws.WriteMessage(websocket.TextMessage, data) != nil {
+			unsubscribe <- ws
+		}
 	}
 }
 
