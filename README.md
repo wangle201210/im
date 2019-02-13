@@ -74,7 +74,7 @@ c端都通过http接口向b端发送信息,b端接收到后通过ws向订阅者�
 接口:ws://域名/ws/join?token=xxxxx&room=xxx
 发送消息调用:websock.send(content)
 接受接受调用:websock.onmessage(content)
-接收到的content:{"Type":2,"User":"用户名","Room":1,"Timestamp":1548658898216,"Content":"这里是内容"} 
+接收到的content:{"Type":2,"User":"用户名","room":1,"Timestamp":1548658898216,"content":"这里是内容"} 
 
 注解:
     token       登陆后从c端获取到的用于验证身份
@@ -83,9 +83,9 @@ c端都通过http接口向b端发送信息,b端接收到后通过ws向订阅者�
 
     content.Type        c端不用
     content.User        用户名
-    content.Room        房间号
+    content.room        房间号
     content.Timestamp   时间戳
-    content.Content     消息内容
+    content.content     消息内容
 ```
 
 ### 登陆
@@ -107,7 +107,7 @@ c端都通过http接口向b端发送信息,b端接收到后通过ws向订阅者�
             "password": "password",
             "role": "admin",
             "token": "",
-            "Chat": null,
+            "chat": null,
             "created_at": "2019-01-27T22:38:23+08:00",
             "updated_at": "2019-01-27T22:38:29+08:00"
         },
@@ -124,10 +124,10 @@ c端都通过http接口向b端发送信息,b端接收到后通过ws向订阅者�
 方法:post
 接口:/api/admin/videos
 需要参数:{
-        "Url": "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
-        "Content": "描述(备注)",
-        "Room": 3,
-        "CId": 1
+        "url": "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
+        "content": "描述(备注)",
+        "room": 3,
+        "c_id": 1
 }
 返回结果:{
     "code": 201,
@@ -159,10 +159,10 @@ c端都通过http接口向b端发送信息,b端接收到后通过ws向订阅者�
 方法:put
 接口:/api/admin/video/{c_id}
 需要参数:{
-        "Url": "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
-        "Content": "描述(备注)",
-        "Room": 1,
-        "CId": 1
+        "url": "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
+        "content": "描述(备注)",
+        "room": 1,
+        "c_id": 1
 }
 返回结果:{
     "code": 205,
@@ -578,14 +578,5 @@ c端都通过http接口向b端发送信息,b端接收到后通过ws向订阅者�
 以上所有接口都需要在请求头里加入token值,token来源于登陆结果
 如下:
 Authorization : Bearer token
-
-
-
-
-
-
-
-
-
 
 
