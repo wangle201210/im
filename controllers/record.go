@@ -23,11 +23,12 @@ func (this *RecordController) All() {
 	if s != "" {
 		by = by.Filter("room", s)
 	}
-	all, e := by.All(&modRecordList)
+	e := by.One(&modRecordList)
+	//all, e := by.All(&modRecordList)
 	if e != nil {
 		beego.Info(e)
 	} else {
-		beego.Info(all)
+		//beego.Info(all)
 		resp = Response{readSuccess.code,readSuccess.text,modRecordList}
 	}
 	this.Data["json"] = resp

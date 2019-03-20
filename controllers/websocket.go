@@ -74,7 +74,7 @@ func (this *WebSocketController) Join() {
 	// Join chat room.
 	Join(uname,room, ws)
 	defer Leave(ws)
-	broadcastPics(ws)
+	//broadcastPics(ws)
 	broadcastVideo(ws,room)
 	// 一直监听前端来的消息
 	// Message receive loop.

@@ -97,7 +97,7 @@ func chatroom() {
 			if  subscribers[sub.Room] == nil || !IsUserExist(subscribers[sub.Room], sub.Name) {
 				subscribers[sub.Room].PushBack(sub) // Add user to the end of list.
 				// Publish a JOIN event.
-				publish <- newEvent(models.EVENT_JOIN, sub.Name,sub.Room, "大家好！")
+				publish <- newEvent(models.EVENT_JOIN, sub.Name,sub.Room, "新人到来")
 				beego.Info("New user:", sub.Name, ";WebSocket:", sub.Conn != nil,";room:",sub.Room)
 			} else {
 				subscribers[sub.Room].PushBack(sub) // Add user to the end of list. 允许同一账号多次登陆

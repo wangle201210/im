@@ -23,11 +23,12 @@ func (this *HistoryController) All() {
 	if s != "" {
 		by = by.Filter("room", s)
 	}
-	all, e := by.All(&modHistoryList)
+	e := by.One(&modHistoryList)
+	//all, e := by.All(&modHistoryList)
 	if e != nil {
 		beego.Info(e)
 	} else {
-		beego.Info(all)
+		//beego.Info(all)
 		resp = Response{readSuccess.code,readSuccess.text,modHistoryList}
 	}
 	this.Data["json"] = resp

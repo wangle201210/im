@@ -20,16 +20,16 @@ var modPicList []models.Pic
 func (this *PicController) All() {
 	o := orm.NewOrm()
 	qs := o.QueryTable("pic")
-	by := qs.OrderBy("-order")
+	by := qs.OrderBy("-id")
 	s := this.GetString("room")
 	if s != "" {
 		by = by.Filter("room", s)
 	}
-	all, e := by.All(&modPicList)
+	e := by.One(&modPicList)
 	if e != nil {
 		beego.Info(e)
 	} else {
-		beego.Info(all)
+		//beego.Info(modPicList)
 		resp = Response{readSuccess.code,readSuccess.text,modPicList}
 	}
 	this.Data["json"] = resp
