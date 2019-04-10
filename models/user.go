@@ -13,6 +13,7 @@ type User struct {
 	Password 	string    	`json:"password" orm:"column(password);size(100)"`
 	Role     	string    	`json:"role" orm:"column(role);size(100)"`
 	Token     	string   	`json:"token" orm:"column(token);size(100);null"`
+	Jl     		string  	`json:"jl" orm:"column(jl);type(text)"`
 	Chat        []*Chat 	`orm:"reverse(many)"` // 设置一对多的反向关系
 	CreatedAt   time.Time	`json:"created_at" orm:"auto_now_add;type(datetime)"`
 	UpdatedAt   time.Time	`json:"updated_at" orm:"auto_now;type(datetime)"`
@@ -100,7 +101,27 @@ func (reg *User) Delete() error {
 	return nil
 }
 
-
+func (reg *User) OnlyNeed() error  {
+	if e := orm.NewOrm().QueryTable("user").Filter("Id", reg.Id).One(reg,"Id","Name"); e != nil {
+		return  e
+	}
+	return nil
+}
 func init() {
 	orm.RegisterModel(new(User))
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

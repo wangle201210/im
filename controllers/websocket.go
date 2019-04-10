@@ -50,10 +50,10 @@ func (this *WebSocketController) Join() {
 		this.Redirect("/", 302)
 		return
 	}
-	if user.Role != "admin" && !IsAdminExist(subscribers[room]) { //管理员不在线
-		this.Redirect("/", 302)
-		return
-	}
+	//if user.Role != "admin" && !IsAdminExist(subscribers[room]) { //管理员不在线
+	//	this.Redirect("/", 302)
+	//	return
+	//}
 	//if user.Role == "admin"  && IsAdminExist(subscribers[room]) {
 	//	this.Redirect("/", 302)
 	//	return

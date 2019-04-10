@@ -11,6 +11,9 @@ type UserController struct {
 	AppController
 }
 
+type force struct {
+	Force string `json:"force"`
+}
 type LoginToken struct {
 	User  models.User `json:"user"`
 	Token string      `json:"token"`
@@ -18,9 +21,12 @@ type LoginToken struct {
 
 func (this *UserController) Login() {
 	req := this.Ctx.Input.RequestBody
+	//force := this.Input().Get("force")
 	r := models.User{}
 	err := json.Unmarshal(req,&r)
-	if err != nil {
+	f := force{}
+	e := json.Unmarshal(req,&f)
+	if err != nil || e != nil {
 		beego.Info("json.Unmarshal is err:", err.Error())
 	}
 	user, b := models.CheckUserAuth(r.Name, r.Password)
@@ -45,8 +51,17 @@ func (this *UserController) Login() {
 		for _,room := range subscribers{
 			for sub := room.Front(); sub != nil; sub = sub.Next() {
 				if sub.Value.(Subscriber).Name == user.Name {
-					data = Response{302,"你的账号已经在别处登陆！",""}
-					unsubscribe <- sub.Value.(Subscriber).Conn
+					if user.Role == "admin" {
+						data = Response{302,"你的账号已经在别处登陆！",""}
+					} else {
+						if f.Force == "force" {
+							unsubscribe <- sub.Value.(Subscriber).Conn
+						} else {
+							data = Response{302,"你的账号已经在别处登陆！","have"}
+						}
+					}
+
+
 				}
 			}
 		}
