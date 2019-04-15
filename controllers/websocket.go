@@ -16,6 +16,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"im/helper"
 	"net/http"
 
@@ -58,9 +59,11 @@ func (this *WebSocketController) Join() {
 	//	this.Redirect("/", 302)
 	//	return
 	//}
-	//if IsUserExist(subscribers, uname) {
-	//	publish <- newEvent(models.EVENT_OLD, uname, "")
-	//}
+	if IsUserExist(subscribers[room], uname) {
+		beego.Error("Cannot setup WebSocket connection:", "已在线")
+		return
+		//publish <- newEvent(models.EVENT_OLD, uname, "")
+	}
 	// Upgrade from http request to WebSocket.
 	ws, err := websocket.Upgrade(this.Ctx.ResponseWriter, this.Ctx.Request, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
@@ -106,12 +109,39 @@ func broadcastWebSocket(event models.Event,room int64) {
 	//beego.Info("room is:",room)
 	for sub := subscribers[room].Front(); sub != nil; sub = sub.Next() {
 		// Immediately send event to WebSocket users.
+		beego.Info("----------------------")
+
 		ws := sub.Value.(Subscriber).Conn
-		if ws != nil {
-			if ws.WriteMessage(websocket.TextMessage, data) != nil {
+		defer deferSend(ws,data,0)
+		e := ws.WriteMessage(websocket.TextMessage, data)
+			if e != nil {
+				beego.Error("not send",data,e)
+
 				// User disconnected.
-				unsubscribe <- sub.Value.(Subscriber).Conn
+				//unsubscribe <- sub.Value.(Subscriber).Conn
 			}
-		}
 	}
+}
+//尝试50次都发不出去，就不发了
+func deferSend(ws *websocket.Conn,data []byte,i int)  {
+
+	if i > 50 {
+		unsubscribe <- ws
+		return
+	}
+	fmt.Println("cccccccccc")
+	if err:=recover();err!=nil{
+		defer deferSend(ws,data,i+1)
+		e := ws.WriteMessage(websocket.TextMessage, data)
+		if e != nil {
+			beego.Error("not send",data,e)
+
+			// User disconnected.
+			//unsubscribe <- ws
+		}
+		fmt.Println(err) // 这里的err其实就是panic传入的内容，55
+	}
+	fmt.Println("ddddddddddd")
+
+
 }

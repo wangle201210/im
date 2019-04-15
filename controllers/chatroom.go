@@ -108,13 +108,15 @@ func chatroom() {
 		case event := <-publish:
 			// 倒叙遍历待发送的消息
 			// Notify waiting list.
-			for ch := waitingList.Back(); ch != nil; ch = ch.Prev() {
-				ch.Value.(chan bool) <- true
-				waitingList.Remove(ch)
-			}
+			if event.Content != "ping" {//ping 就不管
+				for ch := waitingList.Back(); ch != nil; ch = ch.Prev() {
+					ch.Value.(chan bool) <- true
+					waitingList.Remove(ch)
+				}
 
-			broadcastWebSocket(event,event.Room)
-			models.NewArchive(event)
+				broadcastWebSocket(event,event.Room)
+				models.NewArchive(event)
+			}
 
 			//if event.Type == models.EVENT_MESSAGE {
 			//	beego.Info("Message from", event.User, ";Content:", event.Content,";room:",event.Room)

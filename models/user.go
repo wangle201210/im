@@ -13,7 +13,7 @@ type User struct {
 	Password 	string    	`json:"password" orm:"column(password);size(100)"`
 	Role     	string    	`json:"role" orm:"column(role);size(100)"`
 	Token     	string   	`json:"token" orm:"column(token);size(100);null"`
-	Jl     		string  	`json:"jl" orm:"column(jl);type(text)"`
+	Jl     		string  	`json:"jl" orm:"column(jl);type(text);null"`
 	Chat        []*Chat 	`orm:"reverse(many)"` // 设置一对多的反向关系
 	CreatedAt   time.Time	`json:"created_at" orm:"auto_now_add;type(datetime)"`
 	UpdatedAt   time.Time	`json:"updated_at" orm:"auto_now;type(datetime)"`

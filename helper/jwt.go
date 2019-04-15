@@ -34,7 +34,7 @@ func init() {
 func (e EasyToken) GetToken() (string, error){
 	//自定义claim
 	claim := jwt.MapClaims{
-		"exp": 		time.Now().Add(time.Hour * time.Duration(1)).Unix(),
+		"exp": 		time.Now().Add(time.Hour * time.Duration(25)).Unix(),
 		"nbf":      time.Now().Unix(),
 		"iat":      time.Now().Unix(),
 		"info":		e,
