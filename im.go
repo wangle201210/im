@@ -16,7 +16,9 @@
 package main
 
 import (
+	"gitee.com/johng/gf/g/os/gcron"
 	"github.com/astaxie/beego"
+	"im/helper"
 	"im/models"
 	_ "im/routers"
 )
@@ -33,6 +35,8 @@ func main() {
 	beego.SetStaticPath("/img", "views/img")
 	beego.SetStaticPath("/fonts", "views/fonts")
 	beego.SetStaticPath("/css", "views/css")
+
+	gcron.Add("@every 1h30m", func() { helper.SendMail() })
 	beego.Run()
 }
 func init() {
